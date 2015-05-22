@@ -65,7 +65,7 @@ public class Points {
                     String CUsername = sql.getSetting(ChanID, "CUsername");
                     while (List.hasNext()) {
                         JSONObject chan = (JSONObject) List.next();
-                        String user = String.valueOf(chan.get("user_id"));
+                        String user = String.valueOf(chan.get("userId"));
                         if (!Chatters.contains(user) && !user.equalsIgnoreCase(CUsername)) {
                             Chatters.add(user);
                         }
