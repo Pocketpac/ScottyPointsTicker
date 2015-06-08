@@ -13,8 +13,16 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -22,10 +30,56 @@ import java.util.Map;
  */
 public class sql {
 
+    public void TickTimeWatched(Long ChanID) throws ClassNotFoundException, SQLException, IOException {
+
+        JSONArray ToTick = new JSONArray();
+        try {
+            ToTick.addAll((JSONArray) new JSONParser().parse(new HTTP().getRemoteContent("https://beam.pro/api/v1/chats/" + ChanID + "/users")));
+        } catch (ParseException ex) {
+            Logger.getLogger(sql.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+
+        Connection con = ConMySQL();
+        Statement statement = con.createStatement();
+        ResultSet curHours = statement.executeQuery("SELECT * FROM rankingtable WHERE ChanID=" + ChanID);
+        Map<Long, Long> curPoints = new HashMap();
+
+        while (curHours.next()) {
+            curPoints.put(curHours.getLong("UserID"), curHours.getLong("hoursWatched"));
+        }
+        statement.close();
+        con.close();
+        Long TickTime = 15L * 60 * 1000;
+        Connection con2 = ConMySQL();
+        Statement statement2 = con2.createStatement();
+
+        for (Object T : ToTick) {
+            JSONObject obj = (JSONObject) T;
+            Long UserID = (Long) obj.get("userId");
+            Long Points = null;
+            try {
+                Points = curPoints.get(UserID);
+            } catch (Exception e) {
+            }
+            if (Points == null) {
+                Points = 0L;
+            }
+            Long finalHours = Points + TickTime;
+
+            int Updated = statement2.executeUpdate("UPDATE rankingtable set hoursWatched=" + finalHours + " WHERE ChanID=" + ChanID + " AND UserID=" + UserID);
+            if (Updated == 0) {
+                statement2.executeUpdate("INSERT INTO rankingtable (UserID, ChanID, hoursWatched) VALUES (" + UserID + "," + ChanID + "," + finalHours + ")");
+            }
+        }
+
+        statement2.close();
+        con2.close();
+    }
+
     public void AddPoints(Float Points, Long ChanID, Long UserID) throws ClassNotFoundException, SQLException, IOException {
         Connection con = ConMySQL();
         Statement statement = con.createStatement();
-        //Statement statement = con.createStatement();
 
         statement.setQueryTimeout(15);
         try {
@@ -760,26 +814,27 @@ public class sql {
 //        }
 //    }
 //
-//    public List<Long> GetJoinChannels() throws ClassNotFoundException, SQLException, IOException {
-//        Connection con = CentralStore.ConMySQL();
-//        Statement statement = con.createStatement();
-//        statement.setQueryTimeout(15);
-//        ResultSet setting = null;
-//        List<Long> send = new ArrayList();
-//        try {
-//            setting = statement.executeQuery("select ChanID from settings where UseBot=1 order by Donated DESC;");
-//            while (setting.next()) {
-//                send.add(setting.getLong("ChanID"));
-//
-//            }
-//        } catch (SQLException e) {
-//
-//        } finally {
-//            statement.close();
-//            con.close();
-//            return send;
-//        }
-//    }
+
+    public List<Long> GetJoinChannels() throws ClassNotFoundException, SQLException, IOException {
+        Connection con = CentralStore.ConMySQL();
+        Statement statement = con.createStatement();
+        statement.setQueryTimeout(15);
+        ResultSet setting = null;
+        List<Long> send = new ArrayList();
+        try {
+            setting = statement.executeQuery("select ChanID from settings where UseBot=1 order by Donated DESC;");
+            while (setting.next()) {
+                send.add(setting.getLong("ChanID"));
+
+            }
+        } catch (SQLException e) {
+
+        } finally {
+            statement.close();
+            con.close();
+            return send;
+        }
+    }
 //
 //    public void GetCommandList(Long ChanID) throws FileNotFoundException, IOException, SQLException, ClassNotFoundException, Exception {
 //        Connection con = CentralStore.ConMySQL();

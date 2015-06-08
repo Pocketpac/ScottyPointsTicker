@@ -25,6 +25,36 @@ public class Points {
 
     public static void StartPointsLoop() throws ClassNotFoundException, SQLException, IOException, Exception {
         Map<String, Long> ChanToTick = sql.GetChanList();
+        new Thread("RankThread") {
+            @Override
+            public void run() {
+                List<Long> ToRank = null;
+                try {
+                    ToRank = sql.GetJoinChannels();
+                } catch (ClassNotFoundException | SQLException | IOException ex) {
+                    Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                int RankTime = Math.round(600000 / ToRank.size());
+                for (Long t : ToRank) {
+                    boolean live = new JSONUtil().IsLive(t);
+                    if (live) {
+                        new Thread("RankTicker for " + t) {
+                            @Override
+                            public void run() {
+                                System.out.println("Ticking Ranking for " + t);
+                                try {
+                                    sql.TickTimeWatched(t);
+                                } catch (ClassNotFoundException | SQLException | IOException ex) {
+                                    Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }.start();
+                    }
+
+                }
+            }
+        }.start();
+
         //List<String> users = JSONUtil.GetUserList(ChanID);
         int TickTime = Math.round(600000 / ChanToTick.size());
         for (String Chan : ChanToTick.keySet()) {
@@ -73,6 +103,9 @@ public class Points {
 
                     JSONUtil json = new JSONUtil();
                     boolean live = json.IsLive(ChanID);
+                    if (!live) {
+                        sql.TickTimeWatched(ChanID);
+                    }
                     for (String Players : Chatters) {
                         if (!live) {
 
@@ -89,6 +122,7 @@ public class Points {
 
                             try {
                                 sql.AddPoints(sql.getSettingLong(ChanID, "notidlepoints"), ChanID, Long.valueOf(Players));
+
                             } catch (ClassNotFoundException | SQLException | IOException ex) {
                                 Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
                             }
