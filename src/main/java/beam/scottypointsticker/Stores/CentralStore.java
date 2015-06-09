@@ -8,6 +8,8 @@ package beam.scottypointsticker.Stores;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -19,6 +21,10 @@ public class CentralStore {
     public static String MySQLUser = null;
     public static String MySQLPass = null;
     public static ComboPooledDataSource MySQLCon = null;
+    public static int RankQueue = 0;
+    public static int PointsQueue = 0;
+    final public static int cores = Runtime.getRuntime().availableProcessors();
+    public static ExecutorService ThreadQueue = Executors.newFixedThreadPool(2);
 
     public static Connection ConMySQL() throws SQLException {
 

@@ -87,7 +87,7 @@ public class Main {
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
-//            PrintStream out = new PrintStream(new FileOutputStream("Console_Output.Log", true));    
+//            PrintStream out = new PrintStream(new FileOutputStream("Console_Output.Log", true));
             System.setErr(Errorout);
 
         }
@@ -143,7 +143,8 @@ public class Main {
 
         public void run() {
             try {
-                Points.StartPointsLoop();
+
+                new Points().StartPointsLoop();
             } catch (Exception ex) {
 
             }

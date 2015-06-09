@@ -5,6 +5,9 @@
  */
 package beam.scottypointsticker.utils;
 
+import static beam.scottypointsticker.Stores.CentralStore.PointsQueue;
+import static beam.scottypointsticker.Stores.CentralStore.RankQueue;
+import static beam.scottypointsticker.Stores.CentralStore.ThreadQueue;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,7 +26,7 @@ public class Points {
     static int curPointsIndex;
     static sql sql = new sql();
 
-    public static void StartPointsLoop() throws ClassNotFoundException, SQLException, IOException, Exception {
+    public void StartPointsLoop() throws ClassNotFoundException, SQLException, IOException, Exception {
 
         new Thread("RankThread") {
             @Override
@@ -35,108 +38,142 @@ public class Points {
                     Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 int RankTime = Math.round(600000 / ToRank.size());
-                for (Long t : ToRank) {
-                    boolean live = new JSONUtil().IsLive(t);
-                    if (live) {
-                        new Thread("RankTicker for " + t) {
-                            @Override
-                            public void run() {
-                                System.out.println("Ticking Ranking for " + t);
-                                try {
-                                    new sql().TickTimeWatched(t);
-                                } catch (ClassNotFoundException | SQLException | IOException ex) {
-                                    Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        }.start();
-                    }
 
+                for (Long t : ToRank) {
+                    RankQueue++;
+
+                    Runnable RL = new RankLoop(t);
+                    ThreadQueue.execute(RL);
+                    while (RankQueue > 9) {
+                        try {
+                            Thread.sleep(250);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
                 }
+                RankQueue = 0;
             }
         }.start();
 
         Map<String, Long> ChanToTick = sql.GetChanList();
-        int TickTime = Math.round(600000 / ChanToTick.size());
+        //int TickTime = Math.round(600000 / ChanToTick.size());
         for (String Chan : ChanToTick.keySet()) {
+            PointsQueue++;
             System.out.println("Ticking for " + Chan);
             Long ChanID = ChanToTick.get(Chan);
             //System.out.println("Ticking points for channel " + Chan + ":" + ChanID);
-            PointLoopThread(Chan, ChanID);
-            Thread.sleep(TickTime);
+            Runnable PLT = new PointLoop(Chan, ChanID);
+            ThreadQueue.execute(PLT);
+            while (PointsQueue > 9) {
+                Thread.sleep(250);
+            }
+
         }
+        PointsQueue = 0;
 
     }
 
-    public static void PointLoopThread(final String channel, final Long ChanID) {
+    public class RankLoop implements Runnable {
 
-        new Thread(channel + " Points Ticker") {
+        Long ChanID = null;
 
-            @Override
-            public void run() {
-                HTTP bot = new HTTP();
+        RankLoop(Long chanid) {
+            this.ChanID = chanid;
+        }
+
+        @Override
+        public void run() {
+            System.out.println("Ticking Ranking for " + ChanID);
+            boolean live = new JSONUtil().IsLive(ChanID);
+            if (live) {
                 try {
-                    Object obj = null;
-                    //System.out.println("Ticking Points for channel " + channel);
-                    boolean got = false;
-                    JSONParser parser = new JSONParser();
-                    while (!got) {
-
-                        try {
-                            obj = parser.parse(bot.getRemoteContent("https://beam.pro/api/v1/chats/" + ChanID + "/users"));
-                            got = true;
-                        } catch (org.json.simple.parser.ParseException ex) {
-                            Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-
-                    JSONArray ToList = (JSONArray) obj;
-                    Iterator List = ToList.iterator();
-                    List<String> Chatters = new ArrayList();
-                    String CUsername = sql.getSetting(ChanID, "CUsername");
-                    while (List.hasNext()) {
-                        JSONObject chan = (JSONObject) List.next();
-                        String user = String.valueOf(chan.get("userId"));
-                        if (!Chatters.contains(user) && !user.equalsIgnoreCase(CUsername)) {
-                            Chatters.add(user);
-                        }
-                    }
-
-                    JSONUtil json = new JSONUtil();
-                    boolean live = json.IsLive(ChanID);
-                    if (!live) {
-                        sql.TickTimeWatched(ChanID);
-                    }
-                    for (String Players : Chatters) {
-                        if (!live) {
-
-                            try {
-                                if (sql.getSettingLong(ChanID, "idlepoints") < 1) {
-                                    return;
-                                }
-                                sql.AddPoints(sql.getSettingLong(ChanID, "idlepoints"), ChanID, Long.valueOf(Players));
-                            } catch (ClassNotFoundException | SQLException | IOException ex) {
-                                Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-
-                        } else {
-
-                            try {
-                                sql.AddPoints(sql.getSettingLong(ChanID, "notidlepoints"), ChanID, Long.valueOf(Players));
-
-                            } catch (ClassNotFoundException | SQLException | IOException ex) {
-                                Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-
-                        }
-                    }
+                    new sql().TickTimeWatched(ChanID);
                 } catch (ClassNotFoundException | SQLException | IOException ex) {
                     Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-
-        }.start();
+            RankQueue--;
+        }
 
     }
+
+    public class PointLoop implements Runnable {
+
+        String Channel = "";
+        Long ChanID = null;
+
+        PointLoop(String channel, Long chanid) {
+            this.ChanID = chanid;
+            this.Channel = channel;
+        }
+
+        @Override
+        public void run() {
+            HTTP bot = new HTTP();
+            try {
+                Object obj = null;
+                //System.out.println("Ticking Points for channel " + channel);
+                boolean got = false;
+                JSONParser parser = new JSONParser();
+                while (!got) {
+
+                    try {
+                        obj = parser.parse(bot.getRemoteContent("https://beam.pro/api/v1/chats/" + ChanID + "/users"));
+                        got = true;
+                    } catch (org.json.simple.parser.ParseException ex) {
+                        Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                JSONArray ToList = (JSONArray) obj;
+                Iterator List = ToList.iterator();
+                List<String> Chatters = new ArrayList();
+                String CUsername = sql.getSetting(ChanID, "CUsername");
+                while (List.hasNext()) {
+                    JSONObject chan = (JSONObject) List.next();
+                    String user = String.valueOf(chan.get("userId"));
+                    if (!Chatters.contains(user) && !user.equalsIgnoreCase(CUsername)) {
+                        Chatters.add(user);
+                    }
+                }
+
+                JSONUtil json = new JSONUtil();
+                boolean live = json.IsLive(ChanID);
+                if (!live) {
+                    sql.TickTimeWatched(ChanID);
+                }
+                for (String Players : Chatters) {
+                    if (!live) {
+
+                        try {
+                            if (sql.getSettingLong(ChanID, "idlepoints") < 1) {
+                                return;
+                            }
+                            sql.AddPoints(sql.getSettingLong(ChanID, "idlepoints"), ChanID, Long.valueOf(Players));
+                        } catch (ClassNotFoundException | SQLException | IOException ex) {
+                            Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                    } else {
+
+                        try {
+                            sql.AddPoints(sql.getSettingLong(ChanID, "notidlepoints"), ChanID, Long.valueOf(Players));
+
+                        } catch (ClassNotFoundException | SQLException | IOException ex) {
+                            Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                    }
+                }
+            } catch (ClassNotFoundException | SQLException | IOException ex) {
+                Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            PointsQueue--;
+        }
+
+    }
+
 //
 //    public Points(String server, int port) {
 //        super(server, port);
