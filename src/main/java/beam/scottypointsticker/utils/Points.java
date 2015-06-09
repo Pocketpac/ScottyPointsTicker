@@ -24,13 +24,13 @@ public class Points {
     static sql sql = new sql();
 
     public static void StartPointsLoop() throws ClassNotFoundException, SQLException, IOException, Exception {
-        Map<String, Long> ChanToTick = sql.GetChanList();
+
         new Thread("RankThread") {
             @Override
             public void run() {
                 List<Long> ToRank = null;
                 try {
-                    ToRank = sql.GetJoinChannels();
+                    ToRank = new sql().GetJoinChannels();
                 } catch (ClassNotFoundException | SQLException | IOException ex) {
                     Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -43,7 +43,7 @@ public class Points {
                             public void run() {
                                 System.out.println("Ticking Ranking for " + t);
                                 try {
-                                    sql.TickTimeWatched(t);
+                                    new sql().TickTimeWatched(t);
                                 } catch (ClassNotFoundException | SQLException | IOException ex) {
                                     Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
                                 }
@@ -55,7 +55,7 @@ public class Points {
             }
         }.start();
 
-        //List<String> users = JSONUtil.GetUserList(ChanID);
+        Map<String, Long> ChanToTick = sql.GetChanList();
         int TickTime = Math.round(600000 / ChanToTick.size());
         for (String Chan : ChanToTick.keySet()) {
             System.out.println("Ticking for " + Chan);
