@@ -84,10 +84,11 @@ public class Points {
 
         @Override
         public void run() {
-            System.out.println("Ticking Ranking for " + ChanID);
+
             boolean live = new JSONUtil().IsLive(ChanID);
             if (live) {
                 try {
+                    System.out.println("Ticking Ranking for " + ChanID);
                     new sql().TickTimeWatched(ChanID);
                 } catch (ClassNotFoundException | SQLException | IOException ex) {
                     Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
@@ -148,6 +149,7 @@ public class Points {
 
                         try {
                             if (sql.getSettingLong(ChanID, "idlepoints") < 1) {
+                                PointsQueue--;
                                 return;
                             }
                             sql.AddPoints(sql.getSettingLong(ChanID, "idlepoints"), ChanID, Long.valueOf(Players));

@@ -143,7 +143,6 @@ public class Main {
 
         public void run() {
             try {
-
                 new Points().StartPointsLoop();
             } catch (Exception ex) {
 

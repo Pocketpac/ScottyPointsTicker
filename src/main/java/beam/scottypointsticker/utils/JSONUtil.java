@@ -41,12 +41,12 @@ public class JSONUtil {
 
     public boolean IsLive(Long ChanID) {
         JSONParser parser = new JSONParser();
-        JSONObject result = null;
+        JSONObject result = new JSONObject();
         boolean Got = false;
         boolean Live = false;
         while (!Got) {
             try {
-                result = (JSONObject) parser.parse(http.getRemoteContent("https://beam.pro/api/v1/channels/" + ChanID));
+                result.putAll((JSONObject) parser.parse(http.getRemoteContent("https://beam.pro/api/v1/channels/" + ChanID)));
                 Got = true;
             } catch (ParseException ex) {
                 try {
@@ -56,7 +56,7 @@ public class JSONUtil {
                 }
             }
         }
-        Boolean IsLive = Boolean.parseBoolean(result.get("online").toString());
+        Boolean IsLive = (Boolean) result.get("online");
         return IsLive;
     }
 }
