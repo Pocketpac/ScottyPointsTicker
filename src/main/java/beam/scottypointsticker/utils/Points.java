@@ -141,9 +141,6 @@ public class Points {
 
                 JSONUtil json = new JSONUtil();
                 boolean live = json.IsLive(ChanID);
-                if (!live) {
-                    sql.TickTimeWatched(ChanID);
-                }
                 for (String Players : Chatters) {
                     if (!live) {
 

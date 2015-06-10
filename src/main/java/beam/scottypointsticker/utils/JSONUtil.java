@@ -56,7 +56,7 @@ public class JSONUtil {
                 }
             }
         }
-        Boolean IsLive = (Boolean) result.get("online");
-        return IsLive;
+        Live = Boolean.parseBoolean(result.get("online").toString());
+        return Live;
     }
 }
