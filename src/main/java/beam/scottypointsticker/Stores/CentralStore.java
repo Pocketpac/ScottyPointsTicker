@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -25,6 +26,25 @@ public class CentralStore {
     public static int PointsQueue = 0;
     final public static int cores = Runtime.getRuntime().availableProcessors();
     public static ExecutorService ThreadQueue = Executors.newFixedThreadPool(2);
+    public static ExecutorService MiscThreads = Executors.newFixedThreadPool(cores * 5);
+    public static JSONObject LastTweet = new JSONObject();
+    public static int TweetQueue = 0;
+
+    public static Long GetLastTweet(Long ChanID) {
+        return (Long) LastTweet.getOrDefault(ChanID, 0L);
+    }
+
+    public static void UpdateLastTweet(Long ChanID) {
+
+        Long NextTweet = System.currentTimeMillis() * (8 * 60 * 60 * 1000);
+        LastTweet.put(ChanID, NextTweet);
+    }
+
+    public static void ClearLastTweet(Long ChanID) {
+        if (LastTweet.containsKey(ChanID)) {
+            LastTweet.remove(ChanID);
+        }
+    }
 
     public static Connection ConMySQL() throws SQLException {
 
