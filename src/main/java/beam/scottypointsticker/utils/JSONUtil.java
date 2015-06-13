@@ -39,6 +39,24 @@ public class JSONUtil {
     // }
     HTTP http = new HTTP();
 
+    public String GetStatus(Long ChanID) throws InterruptedException {
+        JSONParser parser = new JSONParser();
+        JSONObject result = null;
+        boolean Got = false;
+        boolean Live = false;
+        while (!Got) {
+
+            try {
+                result = (JSONObject) parser.parse(new HTTP().getRemoteContent("https://beam.pro/api/v1/channels/" + ChanID));
+                Got = true;
+            } catch (ParseException ex) {
+                sleep(1500);
+            }
+        }
+        String UserID = "" + result.get("name");
+        return UserID;
+    }
+
     public String GetChanName(Long ChanID) throws InterruptedException {
         JSONParser parser = new JSONParser();
         JSONObject result = null;

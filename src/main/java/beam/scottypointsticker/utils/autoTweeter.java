@@ -43,8 +43,12 @@ public class autoTweeter {
                         if (isLive) {
                             TweetQueue++;
                             String MSG = (String) ToTweet.get(t);
-                            String ChanName = new JSONUtil().GetChanName(ChanID);
-                            MSG = MSG.replace("(_channame_)", ChanName);
+                            if (MSG.contains("(_channame_)")) {
+                                MSG = MSG.replace("(_channame_)", new JSONUtil().GetChanName(ChanID));
+                            }
+                            if (MSG.contains("(_status_)")) {
+                                MSG = MSG.replace("(_status_)", new JSONUtil().GetStatus(ChanID));
+                            }
                             Runnable tweet = new Tweet(ChanID, MSG);
                             MiscThreads.execute(tweet);
                             CentralStore.UpdateLastTweet(ChanID);
