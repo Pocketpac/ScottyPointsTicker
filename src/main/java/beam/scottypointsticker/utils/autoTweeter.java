@@ -64,6 +64,7 @@ public class autoTweeter {
                             Logger.getLogger(autoTweeter.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
+                    Thread.sleep(50);
                 }
                 Thread.sleep(5 * 60 * 60 * 1000);
             } catch (Exception e) {

@@ -51,6 +51,11 @@ public class Points {
                             Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
                 RankQueue = 0;
             }
@@ -68,6 +73,7 @@ public class Points {
             while (PointsQueue > 9) {
                 Thread.sleep(250);
             }
+            Thread.sleep(50);
 
         }
         PointsQueue = 0;
@@ -164,6 +170,7 @@ public class Points {
                         }
 
                     }
+
                 }
             } catch (ClassNotFoundException | SQLException | IOException ex) {
                 Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
