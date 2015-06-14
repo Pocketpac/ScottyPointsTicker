@@ -101,7 +101,7 @@ public class Main {
         }
 
         PrepTimers();
-        CentralStore.MiscThreads.execute(new startTweeter());
+        CentralStore.threadPool.execute(new startTweeter());
 
     }
 

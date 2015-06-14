@@ -25,8 +25,8 @@ public class CentralStore {
     public static int RankQueue = 0;
     public static int PointsQueue = 0;
     final public static int cores = Runtime.getRuntime().availableProcessors();
-    public static ExecutorService ThreadQueue = Executors.newFixedThreadPool(2);
-    public static ExecutorService MiscThreads = Executors.newFixedThreadPool(cores * 5);
+    public static ExecutorService threadPool = Executors.newCachedThreadPool();
+
     public static JSONObject LastTweet = new JSONObject();
     public static int TweetQueue = 0;
 

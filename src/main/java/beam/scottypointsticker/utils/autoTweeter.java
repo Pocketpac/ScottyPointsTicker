@@ -7,8 +7,8 @@ package beam.scottypointsticker.utils;
 
 import beam.scottypointsticker.Stores.CentralStore;
 import static beam.scottypointsticker.Stores.CentralStore.GetLastTweet;
-import static beam.scottypointsticker.Stores.CentralStore.MiscThreads;
 import static beam.scottypointsticker.Stores.CentralStore.TweetQueue;
+import static beam.scottypointsticker.Stores.CentralStore.threadPool;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +50,7 @@ public class autoTweeter {
                                 MSG = MSG.replace("(_status_)", new JSONUtil().GetStatus(ChanID));
                             }
                             Runnable tweet = new Tweet(ChanID, MSG);
-                            MiscThreads.execute(tweet);
+                            threadPool.execute(tweet);
                             CentralStore.UpdateLastTweet(ChanID);
                         } else {
                             CentralStore.ClearLastTweet(ChanID);

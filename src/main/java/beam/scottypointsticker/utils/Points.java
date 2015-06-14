@@ -7,7 +7,7 @@ package beam.scottypointsticker.utils;
 
 import static beam.scottypointsticker.Stores.CentralStore.PointsQueue;
 import static beam.scottypointsticker.Stores.CentralStore.RankQueue;
-import static beam.scottypointsticker.Stores.CentralStore.ThreadQueue;
+import static beam.scottypointsticker.Stores.CentralStore.threadPool;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class Points {
                     RankQueue++;
 
                     Runnable RL = new RankLoop(t);
-                    ThreadQueue.execute(RL);
+                    threadPool.execute(RL);
                     while (RankQueue > 9) {
                         try {
                             Thread.sleep(250);
@@ -69,7 +69,7 @@ public class Points {
             Long ChanID = ChanToTick.get(Chan);
             //System.out.println("Ticking points for channel " + Chan + ":" + ChanID);
             Runnable PLT = new PointLoop(Chan, ChanID);
-            ThreadQueue.execute(PLT);
+            threadPool.execute(PLT);
             while (PointsQueue > 9) {
                 Thread.sleep(250);
             }
