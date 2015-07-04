@@ -9,6 +9,7 @@ import static beam.scottypointsticker.Stores.CentralStore.PointsQueue;
 import static beam.scottypointsticker.Stores.CentralStore.RankQueue;
 import static beam.scottypointsticker.Stores.CentralStore.threadPool;
 import java.io.IOException;
+import static java.lang.Thread.sleep;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class Points {
 
@@ -119,22 +121,29 @@ public class Points {
         public void run() {
             HTTP bot = new HTTP();
             try {
-                Object obj = null;
-                //System.out.println("Ticking Points for channel " + channel);
                 boolean got = false;
                 JSONParser parser = new JSONParser();
-                while (!got) {
-
+                JSONArray result = new JSONArray();
+                int page = 0;
+                while (true) {
                     try {
-                        obj = parser.parse(bot.getRemoteContent("https://beam.pro/api/v1/chats/" + ChanID + "/users"));
-                        got = true;
-                    } catch (org.json.simple.parser.ParseException ex) {
-                        Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                        JSONArray toAdd = new JSONArray();
+                        toAdd.addAll((JSONArray) parser.parse(new HTTP().getRemoteContent("https://beam.pro/api/v1/chats/" + ChanID + "/users?limit=50&page=" + page)));
+                        if (toAdd.isEmpty()) {
+                            break;
+                        }
+                        result.addAll(toAdd);
+                        page++;
+                    } catch (ParseException ex) {
+                        try {
+                            sleep(1500);
+                        } catch (InterruptedException ex1) {
+                            Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex1);
+                        }
                     }
                 }
 
-                JSONArray ToList = (JSONArray) obj;
-                Iterator List = ToList.iterator();
+                Iterator List = result.iterator();
                 List<String> Chatters = new ArrayList();
                 String CUsername = sql.getSetting(ChanID, "CUsername");
                 while (List.hasNext()) {

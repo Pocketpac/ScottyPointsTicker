@@ -9,6 +9,7 @@ package beam.scottypointsticker.utils;
 import beam.scottypointsticker.Stores.CentralStore;
 import static beam.scottypointsticker.Stores.CentralStore.ConMySQL;
 import java.io.IOException;
+import static java.lang.Thread.sleep;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -68,11 +69,23 @@ public class sql {
     public void TickTimeWatched(Long ChanID) throws ClassNotFoundException, SQLException, IOException {
 
         JSONArray ToTick = new JSONArray();
-        try {
-            ToTick.addAll((JSONArray) new JSONParser().parse(new HTTP().getRemoteContent("https://beam.pro/api/v1/chats/" + ChanID + "/users")));
-        } catch (ParseException ex) {
-            Logger.getLogger(sql.class.getName()).log(Level.SEVERE, null, ex);
-            return;
+        int page = 0;
+        while (true) {
+            try {
+                JSONArray toAdd = new JSONArray();
+                toAdd.addAll((JSONArray) new JSONParser().parse(new HTTP().getRemoteContent("https://beam.pro/api/v1/chats/" + ChanID + "/users?limit=50&page=" + page)));
+                if (toAdd.isEmpty()) {
+                    break;
+                }
+                ToTick.addAll(toAdd);
+                page++;
+            } catch (ParseException ex) {
+                try {
+                    sleep(1500);
+                } catch (InterruptedException ex1) {
+                    Logger.getLogger(sql.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+            }
         }
 
         Connection con = ConMySQL();
