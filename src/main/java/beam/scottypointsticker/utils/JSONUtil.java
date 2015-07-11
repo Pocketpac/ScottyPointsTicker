@@ -82,18 +82,18 @@ public class JSONUtil {
         JSONObject result = new JSONObject();
         boolean Got = false;
         boolean Live = false;
-        while (!Got) {
+
+        try {
+            result.putAll((JSONObject) parser.parse(http.getRemoteContent("https://beam.pro/api/v1/channels/" + ChanID)));
+            Got = true;
+        } catch (ParseException ex) {
             try {
-                result.putAll((JSONObject) parser.parse(http.getRemoteContent("https://beam.pro/api/v1/channels/" + ChanID)));
-                Got = true;
-            } catch (ParseException ex) {
-                try {
-                    sleep(1500);
-                } catch (InterruptedException ex1) {
-                    Logger.getLogger(JSONUtil.class.getName()).log(Level.SEVERE, null, ex1);
-                }
+                sleep(1500);
+            } catch (InterruptedException ex1) {
+                Logger.getLogger(JSONUtil.class.getName()).log(Level.SEVERE, null, ex1);
             }
         }
+
         Live = Boolean.parseBoolean(result.get("online").toString());
         return Live;
     }
