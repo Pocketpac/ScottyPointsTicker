@@ -93,14 +93,19 @@ public class Points {
         @Override
         public void run() {
 
-            boolean live = new JSONUtil().IsLive(ChanID);
-            if (live) {
-                try {
-                    System.out.println("Ticking Ranking for " + ChanID);
-                    new sql().TickTimeWatched(ChanID);
-                } catch (ClassNotFoundException | SQLException | IOException ex) {
-                    Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                boolean live = new JSONUtil().IsLive(ChanID);
+
+                if (live) {
+                    try {
+                        System.out.println("Ticking Ranking for " + ChanID);
+                        new sql().TickTimeWatched(ChanID);
+                    } catch (ClassNotFoundException | SQLException | IOException ex) {
+                        Logger.getLogger(Points.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
+            } catch (Exception e) {
+
             }
             RankQueue--;
         }
