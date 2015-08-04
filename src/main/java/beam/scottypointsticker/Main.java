@@ -5,13 +5,11 @@
  */
 package beam.scottypointsticker;
 
-import beam.scottypointsticker.Stores.CentralStore;
 import static beam.scottypointsticker.Stores.CentralStore.MySQLCon;
 import static beam.scottypointsticker.Stores.CentralStore.MySQLDatabase;
 import static beam.scottypointsticker.Stores.CentralStore.MySQLPass;
 import static beam.scottypointsticker.Stores.CentralStore.MySQLUser;
 import beam.scottypointsticker.utils.Points;
-import beam.scottypointsticker.utils.autoTweeter;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
@@ -101,7 +99,7 @@ public class Main {
         }
 
         PrepTimers();
-        CentralStore.threadPool.execute(new startTweeter());
+        //CentralStore.threadPool.execute(new startTweeter());
 
     }
 
@@ -154,13 +152,12 @@ public class Main {
         }
     }
 
-    static class startTweeter implements Runnable {
-
-        @Override
-        public void run() {
-            new autoTweeter().TweetLoop();
-        }
-
-    }
-
+//    static class startTweeter implements Runnable {
+//
+//        @Override
+//        public void run() {
+//            new autoTweeter().TweetLoop();
+//        }
+//
+//    }
 }
