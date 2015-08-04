@@ -20,9 +20,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.sql.SQLException;
 import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,17 +97,25 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        PrepTimers();
-        //CentralStore.threadPool.execute(new startTweeter());
+        try {
+            //PrepTimers();
+            new Points().StartPointsLoop();
+            //CentralStore.threadPool.execute(new startTweeter());
+        } catch (SQLException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 
-    public static void PrepTimers() {
-        Timer timer = new Timer();
-        timer.schedule(new PointsLoopTimer(), 5000, 900000);
-        System.out.println("Starting Points Timer Thread");
-    }
-
+//    public static void PrepTimers() {
+//        Timer timer = new Timer();
+//        timer.schedule(new PointsLoopTimer(), 5000, 900000);
+//        System.out.println("Starting Points Timer Thread");
+//    }
     public static void PrepMysqlPool() throws PropertyVetoException {
         ComboPooledDataSource cpds = new ComboPooledDataSource();
         cpds.setDriverClass("com.mysql.jdbc.Driver"); //loads the jdbc driver
@@ -140,18 +147,17 @@ public class Main {
         DebugMode = Boolean.parseBoolean(prop.getProperty("Debug"));
     }
 
-    static class PointsLoopTimer extends TimerTask {
-
-        public void run() {
-            try {
-                new Points().StartPointsLoop();
-            } catch (Exception ex) {
-
-            }
-
-        }
-    }
-
+//    static class PointsLoopTimer extends TimerTask {
+//
+//        public void run() {
+//            try {
+//                new Points().StartPointsLoop();
+//            } catch (Exception ex) {
+//
+//            }
+//
+//        }
+//    }
 //    static class startTweeter implements Runnable {
 //
 //        @Override

@@ -27,6 +27,8 @@ public class Points {
     static String curPoints;
     static int curPointsIndex;
     static sql sql = new sql();
+    boolean PointsDone = false;
+    boolean RanksDone = false;
 
     public void StartPointsLoop() throws ClassNotFoundException, SQLException, IOException, Exception {
 
@@ -60,6 +62,11 @@ public class Points {
                     }
                 }
                 RankQueue = 0;
+                System.err.println("Rank tick done");
+                RanksDone = true;
+                if (PointsDone && RanksDone) {
+                    System.exit(0);
+                }
             }
         }.start();
 
@@ -79,6 +86,11 @@ public class Points {
 
         }
         PointsQueue = 0;
+        this.PointsDone = true;
+        if (this.PointsDone && this.RanksDone) {
+            System.exit(0);
+        }
+        System.err.println("Point tick done");
 
     }
 
